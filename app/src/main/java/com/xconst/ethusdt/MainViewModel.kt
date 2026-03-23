@@ -102,9 +102,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun setOledMode(value: Boolean) {
+        android.util.Log.d("OLED_DEBUG", "fuck $value")
         viewModelScope.launch {
             settingsRepo.setOledMode(value)
         }
-        Log.d("ss", "setOledMode: ")
+
     }
 }

@@ -1,18 +1,7 @@
-
 package com.xconst.ethusdt
-
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
-import com.xconst.ethusdt.AlertCondition
-import com.xconst.ethusdt.Direction
-import com.xconst.ethusdt.NetworkStatus
-import com.xconst.ethusdt.SocketStatus
-import com.xconst.ethusdt.Symbol
-import com.xconst.ethusdt.UiState
-
-
-
 import android.Manifest
 import android.app.Activity
 import android.content.BroadcastReceiver
@@ -122,12 +111,23 @@ class MainActivity : ComponentActivity() {
                     onToggleFlashScreen = { viewModel.setScreenFlashEnabled(it) },
                     onToggleVibration = { viewModel.setVibrationEnabled(it) },
                     onToggleFlashlight = { viewModel.setFlashlightEnabled(it) },
-                    onExitApp = {
+//                    onSetPowerSaveMode = { viewModel.setPowerSaveMode(it) }, // 确保在 onExitApp 之前
+//                    onSetOledMode = { viewModel.setOledMode(it) },
+
+                    onSetOledMode = { value ->
+
+                        viewModel.setOledMode(value)
+                    },
+                    onSetPowerSaveMode = { value ->
+                        viewModel.setPowerSaveMode(value)
+                    },
+
+
+                    // 确保在 onExitApp 之前
+                    onExitApp = {                                           // 放最后
                         startService(Intent(this, PriceMonitorService::class.java).setAction(Actions.STOP_MONITOR))
                         finishAffinity()
-                    },
-                    onSetPowerSaveMode = { viewModel.setPowerSaveMode(it) },
-                    onSetOledMode = {viewModel.setOledMode(it)}
+                    }
                 )
             }
         }
@@ -154,46 +154,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-// 下面是 MainScreen 等组件 (保持逻辑一致并修复了 clickable 崩溃)
 
-
-//@Composable
-//fun PixelShifter(enabled: Boolean, content: @Composable () -> Unit) {
-//    if (!enabled) {
-//        content()
-//        return
-//    }
-//
-//    val infiniteTransition = rememberInfiniteTransition(label = "BurnInProtection")
-//
-//    // 横向移动：范围加大到 20dp，时间缩短到 3.5 秒
-//    val offsetX by infiniteTransition.animateValue(
-//        initialValue = (0).dp,
-//        targetValue = 120.dp,
-//        typeConverter = Dp.VectorConverter,
-//        animationSpec = infiniteRepeatable(
-//            animation = tween(3500, easing = FastOutSlowInEasing), // 使用非线性曲线，动作更灵动
-//            repeatMode = RepeatMode.Reverse
-//        ),
-//        label = "x"
-//    )
-//
-//    // 纵向移动：范围加大到 15dp，时间设为 4.8 秒（错开时间差，形成不规则路径）
-//    val offsetY by infiniteTransition.animateValue(
-//        initialValue = (0).dp,
-//        targetValue = 115.dp,
-//        typeConverter = Dp.VectorConverter,
-//        animationSpec = infiniteRepeatable(
-//            animation = tween(4800, easing = LinearOutSlowInEasing),
-//            repeatMode = RepeatMode.Reverse
-//        ),
-//        label = "y"
-//    )
-//
-//    Box(modifier = Modifier.offset(x = offsetX, y = offsetY)) {
-//        content()
-//    }
-//}
 
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -258,6 +219,8 @@ fun MainScreen(
             onStart()
         }
     }
+
+
     Scaffold(
         containerColor = Color.Black,
         floatingActionButton = {
@@ -294,7 +257,8 @@ fun MainScreen(
 
                         // 满 3 次触发
                         if (clickCount >= 3) {
-                            AppBus.update { it.copy(oledModeEnabled = false) }
+//                            AppBus.update { it.copy(oledModeEnabled = false) }
+                            onSetOledMode(false)
                             clickCount = 0 // 触发后重置
                         }
                     }
@@ -327,8 +291,18 @@ fun MainScreen(
                             )
                             if (!statusCollapsed) {
                                 Spacer(Modifier.height(8.dp))
-                                Text("Socket: ${state.socketStatus}")
-                                Text("Network: ${state.networkStatus}")
+//                                Text("Socket: ${state.socketStatus}")
+//                                Text(if (state.networkStatus == NetworkStatus.AVAILABLE) "网络正常" else "网络异常")
+                                Text( when (state.socketStatus) {
+                                    SocketStatus.CONNECTED -> "✅ Socket 已连接"
+                                    SocketStatus.CONNECTING -> "🔄 Socket 连接中"
+                                    SocketStatus.RECONNECTING -> "🔁 Socket 重连中"
+                                    SocketStatus.DISCONNECTED -> "❌ Socket 已断开"
+                                    else -> "⚪ Socket 未启动" } )
+                                Text( when (state.networkStatus) {
+                                    NetworkStatus.AVAILABLE -> "✅ 网络正常"
+                                    NetworkStatus.LOST_SHORT -> "⚠️ 网络不稳定"
+                                    NetworkStatus.LOST_LONG -> "❌ 网络断开" } )
                                 Text(if (state.isMonitoring) "✅ 监控运行中" else "❌ 监控未启动")
                                 Text(if (state.isAlarming) "❌ 报警触发" else "✅ 无报警")
                             }
@@ -368,19 +342,22 @@ fun MainScreen(
                                     OutlinedButton(onClick = onStop, enabled = state.isMonitoring) { Text("停止监控") }
                                     Button(onClick = onStopAlarm, enabled = state.isAlarming) { Text("停止报警") }
                                     Button(onClick = { onToggleMuted(!state.isMuted) }) {
-                                        Text(if (state.isMuted) "🔇 静音" else "🔊 声音")
+                                        Text(if (state.isMuted) "🔇 静音中" else "🔊 声音已开")
                                     }
                                     Button(onClick = { onToggleFlashScreen(!state.screenFlashEnabled) }) {
-                                        Text(if (state.screenFlashEnabled) "💡 闪屏开" else "💡 闪屏关")
+                                        Text(if (state.screenFlashEnabled) "💡 闪屏已开" else "💡 闪屏已关")
+                                    }
+                                    Button(onClick = { onToggleFlashlight(!state.flashlightEnabled) }) {
+                                        Text(if (state.flashlightEnabled) "🔦 闪光灯已开启" else "🔦 闪光灯已关闭")
                                     }
                                     Button(onClick = { onToggleVibration(!state.vibrationEnabled) }) {
-                                        Text(if (state.vibrationEnabled) "📳 震动开" else "📳 震动关")
+                                        Text(if (state.vibrationEnabled) "📳 震动已开" else "📳 震动已关")
                                     }
                                     Button(onClick = { onSetPowerSaveMode(!state.powerSaveMode) }) {
-                                        Text(if (state.powerSaveMode) "⚡ 省电" else "🚀 实时")
+                                        Text(if (state.powerSaveMode) "⚡ 省电开启" else "🚀 实时模式开启")
                                     }
                                     Button(onClick = { onSetOledMode(!state.oledModeEnabled)  }) {
-                                        Text("🌙 夜间模式")
+                                        Text(if (state.oledModeEnabled) "☀️日间模式" else "🌙 夜间模式" )
                                     }
                                     Button(onClick = onExitApp) { Text("退出程序") }
                                 }

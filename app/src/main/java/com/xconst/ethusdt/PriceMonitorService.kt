@@ -106,6 +106,7 @@ class PriceMonitorService : Service() {
             // 👉 HTTP 模式
             httpClient = OkxHttpClient(
                 symbols = listOf(Symbol.ETH, Symbol.BTC),
+                baseUrl = "http://83.229.122.28:8989",
                 onPrice = ::onPrice,
 //                onState = { AppBus.update { it.copy(socketStatus = it) } }
                 onState = { status ->

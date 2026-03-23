@@ -1,6 +1,7 @@
 package com.xconst.ethusdt.store
 
 import android.content.Context
+import android.util.Log
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import kotlinx.coroutines.flow.Flow
@@ -22,7 +23,8 @@ class SettingsRepository(
     }
 
     val settingsFlow: Flow<SettingsData> = context.dataStore.data.map { prefs ->
-        SettingsData(
+
+         SettingsData(
             isMuted = prefs[Keys.IS_MUTED] ?: true,
             screenFlashEnabled = prefs[Keys.SCREEN_FLASH_ENABLED] ?: false,
             vibrationEnabled = prefs[Keys.VIBRATION_ENABLED] ?: true,
@@ -82,6 +84,7 @@ class SettingsRepository(
             prefs[Keys.SCREEN_FLASH_ENABLED] = screenFlashEnabled
             prefs[Keys.VIBRATION_ENABLED] = vibrationEnabled
             prefs[Keys.FLASHLIGHT_ENABLED] = flashlightEnabled
+
         }
     }
 }

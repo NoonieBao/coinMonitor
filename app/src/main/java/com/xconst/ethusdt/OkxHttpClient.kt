@@ -18,7 +18,7 @@ class OkxHttpClient(
     private val tag = "OKX_HTTP"
 
     private var lastSuccessTs = 0L
-    private val timeoutMs = 5000L // 超过3秒没成功就认为断了
+    private val timeoutMs = 10000L // 超过3秒没成功就认为断了
 
     private val client = OkHttpClient.Builder()
         .connectTimeout(5, TimeUnit.SECONDS)
