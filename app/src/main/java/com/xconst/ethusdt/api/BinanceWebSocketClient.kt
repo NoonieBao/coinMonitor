@@ -1,6 +1,7 @@
-package com.xconst.ethusdt
+package com.xconst.ethusdt.api
 
 import android.util.Log
+import com.xconst.ethusdt.bus.SocketStatus
 import kotlinx.coroutines.*
 import okhttp3.*
 import org.json.JSONObject

@@ -20,6 +20,8 @@ class SettingsRepository(
         val POWER_SAVE_MODE = booleanPreferencesKey("power_save_mode")
 
         val OLED_MODE_ENABLE =  booleanPreferencesKey("oled_mode_enable")
+
+        val FLOAT_MODE_ENABLE =  booleanPreferencesKey("float_mode_enable")
     }
 
     val settingsFlow: Flow<SettingsData> = context.dataStore.data.map { prefs ->
@@ -31,6 +33,7 @@ class SettingsRepository(
             flashlightEnabled = prefs[Keys.FLASHLIGHT_ENABLED] ?: false,
             powerSaveMode = prefs[Keys.POWER_SAVE_MODE] ?: false,
             oledModeEnabled = prefs[Keys.OLED_MODE_ENABLE] ?: false,
+            floatEnable = prefs[Keys.FLOAT_MODE_ENABLE] ?: false,
 
         )
     }
@@ -67,24 +70,19 @@ class SettingsRepository(
     }
 
     suspend fun setOledMode(value: Boolean) {
+        android.util.Log.d("reys.OLED_MODE_ENABL =", "fuck $value")
+
         context.dataStore.edit { prefs ->
             prefs[Keys.OLED_MODE_ENABLE] = value
         }
     }
 
+    suspend fun setFloatMode(value: Boolean) {
+        android.util.Log.d("refs[Keys.FLOAT_MODE_ENABLE] =", "fuck $value")
 
-    suspend fun saveAll(
-        isMuted: Boolean,
-        screenFlashEnabled: Boolean,
-        vibrationEnabled: Boolean,
-        flashlightEnabled: Boolean
-    ) {
         context.dataStore.edit { prefs ->
-            prefs[Keys.IS_MUTED] = isMuted
-            prefs[Keys.SCREEN_FLASH_ENABLED] = screenFlashEnabled
-            prefs[Keys.VIBRATION_ENABLED] = vibrationEnabled
-            prefs[Keys.FLASHLIGHT_ENABLED] = flashlightEnabled
-
+            prefs[Keys.FLOAT_MODE_ENABLE] = value
         }
     }
+
 }

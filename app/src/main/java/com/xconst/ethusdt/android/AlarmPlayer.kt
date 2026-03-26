@@ -1,10 +1,11 @@
-package com.xconst.ethusdt
+package com.xconst.ethusdt.android
 
 import android.content.Context
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.provider.Settings
 import android.util.Log
+import com.xconst.ethusdt.bus.AppBus
 
 object AlarmPlayer {
 

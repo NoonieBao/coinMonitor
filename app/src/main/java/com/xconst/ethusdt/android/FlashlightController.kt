@@ -1,6 +1,7 @@
-package com.xconst.ethusdt
+package com.xconst.ethusdt.android
 
 import android.content.Context
+import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
 import kotlinx.coroutines.*
 
@@ -18,7 +19,7 @@ class FlashlightController(context: Context) {
     init {
         cameraId = cameraManager.cameraIdList.firstOrNull { id ->
             cameraManager.getCameraCharacteristics(id)
-                .get(android.hardware.camera2.CameraCharacteristics.FLASH_INFO_AVAILABLE) == true
+                .get(CameraCharacteristics.FLASH_INFO_AVAILABLE) == true
         }
     }
 

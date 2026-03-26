@@ -1,6 +1,8 @@
-package com.xconst.ethusdt
+package com.xconst.ethusdt.api
 
 import android.util.Log
+import com.xconst.ethusdt.bus.SocketStatus
+import com.xconst.ethusdt.Symbol
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -69,7 +71,7 @@ class OkxWebSocketClient(
 
                     if (instId.isBlank() || markPx.isBlank()) return
 
-                    val symbol = Symbol.fromInstId(instId) ?: return
+                    val symbol = Symbol.Companion.fromInstId(instId) ?: return
                     val price = markPx.toDouble()
 
                     Log.d(tag, "symbol=$symbol, price=$price")

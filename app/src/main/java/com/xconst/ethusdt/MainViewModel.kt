@@ -1,9 +1,12 @@
 package com.xconst.ethusdt
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.xconst.ethusdt.bus.AppBus
+import com.xconst.ethusdt.bus.Direction
+import com.xconst.ethusdt.bus.UiState
+import com.xconst.ethusdt.store.AppRepository
 import com.xconst.ethusdt.store.SettingsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -44,6 +47,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     flashlightEnabled = appState.flashlightEnabled,
                     powerSaveMode = appState.powerSaveMode,
                     oledModeEnabled = appState.oledModeEnabled,
+                    floatEnable = appState.floatEnable,
 
                 )
             }
@@ -101,6 +105,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+
+
     fun setOledMode(value: Boolean) {
         android.util.Log.d("OLED_DEBUG", "fuck $value")
         viewModelScope.launch {
@@ -108,4 +114,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
 
     }
+
+    fun setFloatMode(value: Boolean) {
+        android.util.Log.d("setFloatMode", "fuck $value")
+
+        viewModelScope.launch {
+            settingsRepo.setFloatMode(value)
+        }
+
+    }
+
 }

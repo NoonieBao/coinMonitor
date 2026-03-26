@@ -1,9 +1,9 @@
-package com.xconst.ethusdt
+package com.xconst.ethusdt.bus
 
 import com.xconst.ethusdt.store.SettingsData
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 object AppBus {
@@ -20,8 +20,11 @@ object AppBus {
                 screenFlashEnabled = settings.screenFlashEnabled,
                 vibrationEnabled = settings.vibrationEnabled,
                 flashlightEnabled = settings.flashlightEnabled,
-                powerSaveMode = settings.powerSaveMode, // 👈 必须加
+                powerSaveMode = settings.powerSaveMode,
                 oledModeEnabled = settings.oledModeEnabled,
+                floatEnable = settings.floatEnable,
+
+
             )
         }
     }

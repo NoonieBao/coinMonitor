@@ -6,6 +6,16 @@ import android.content.Intent
 import android.graphics.BitmapFactory
 import android.os.*
 import androidx.core.app.NotificationCompat
+import com.xconst.ethusdt.android.AlarmPlayer
+import com.xconst.ethusdt.android.FlashlightController
+import com.xconst.ethusdt.api.OkxHttpClient
+import com.xconst.ethusdt.api.OkxWebSocketClient
+import com.xconst.ethusdt.bus.AppBus
+import com.xconst.ethusdt.bus.Direction
+import com.xconst.ethusdt.bus.NetworkStatus
+import com.xconst.ethusdt.bus.SocketStatus
+import com.xconst.ethusdt.floatWindows.FloatWindowService
+import com.xconst.ethusdt.store.AppRepository
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
 
@@ -58,22 +68,30 @@ class PriceMonitorService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
+        val stopFun = {
+            AlarmPlayer.stop()
+            stopVibration()
+            flashlight.stopFlashing()
+            AppBus.update { it.copy(isAlarming = false) }
+            socketClient?.resetWebSocket()
+        }
+
         when (intent?.action) {
-            Actions.START -> startMonitoring()
+            Actions.START -> {
+                startMonitoring()
+                stopFun()
+            }
             Actions.STOP_MONITOR -> stopMonitoring()
 
             Actions.STOP_ALARM -> {
-                AlarmPlayer.stop()
-                stopVibration()
-                flashlight.stopFlashing()
-                AppBus.update { it.copy(isAlarming = false) }
-                socketClient?.resetWebSocket()
+                stopFun()
             }
 
             Actions.KILL_MONITOR -> {
                 stopMonitoring()
                 sendBroadcast(Intent(Actions.ACTION_EXIT_APP))
             }
+
 
             else -> startMonitoring()
         }
@@ -108,7 +126,6 @@ class PriceMonitorService : Service() {
                 symbols = listOf(Symbol.ETH, Symbol.BTC),
                 baseUrl = "http://83.229.122.28:8989",
                 onPrice = ::onPrice,
-//                onState = { AppBus.update { it.copy(socketStatus = it) } }
                 onState = { status ->
                     AppBus.update { state ->
                         state.copy(socketStatus = status)
@@ -123,7 +140,7 @@ class PriceMonitorService : Service() {
                 symbols = listOf(Symbol.ETH, Symbol.BTC),
                 onPrice = ::onPrice,
 //                onSocketState = { AppBus.update { it.copy(socketStatus = it) } }    //Argument type mismatch: actual type is 'AppState', but 'SocketStatus' was expected.
-                        onSocketState = { status ->
+                onSocketState = { status ->
                     AppBus.update { state ->
                         state.copy(socketStatus = status)
                     }
@@ -161,6 +178,12 @@ class PriceMonitorService : Service() {
         AlarmPlayer.stop()
         stopVibration()
         flashlight.stopFlashing()
+
+
+        val stopFloatIntent = Intent(this, FloatWindowService::class.java).apply {
+            action = FloatWindowService.ACTION_STOP
+        }
+        startService(stopFloatIntent)
 
         AppBus.update {
             it.copy(
@@ -264,6 +287,8 @@ class PriceMonitorService : Service() {
 
                 if (stale && AppBus.appState.value.isMonitoring) {
                     AppBus.update { it.copy(networkStatus = NetworkStatus.LOST_LONG) }
+
+                    // Todo
 
                     if (!AlarmPlayer.isRunning()) {
                         AlarmPlayer.start(applicationContext)

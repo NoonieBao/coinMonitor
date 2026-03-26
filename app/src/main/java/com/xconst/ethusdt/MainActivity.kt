@@ -1,12 +1,14 @@
 package com.xconst.ethusdt
-
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
+// 如果你的 FloatWindowService 在不同包下
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import android.Manifest
 import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
-import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
 import android.os.Bundle
@@ -18,7 +20,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -33,17 +34,55 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
+import com.xconst.ethusdt.bus.AlertCondition
+import com.xconst.ethusdt.bus.Direction
+import com.xconst.ethusdt.bus.NetworkStatus
+import com.xconst.ethusdt.bus.SocketStatus
+import com.xconst.ethusdt.bus.UiState
+import com.xconst.ethusdt.floatWindows.FloatWindowService
 import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
+
+    private val overlayPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) {
+        if (Settings.canDrawOverlays(this)) {
+            // 用户开启了权限，直接启动服务
+            startFloatService()
+        }
+    }
+
+    private fun startFloatService() {
+        val intent = Intent(this, FloatWindowService::class.java)
+        startService(intent)
+    }
+
+    private fun stopFloatService(){
+        val stopFloatIntent = Intent(this, FloatWindowService::class.java).apply {
+            action = FloatWindowService.ACTION_STOP
+        }
+        startService(stopFloatIntent)
+    }
+
+    private fun toggleFloatWindow() {
+        if (Settings.canDrawOverlays(this)) {
+            startFloatService()
+        } else {
+            // 2. 引导用户去开启权限
+            val intent = Intent(
+                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                Uri.parse("package:$packageName")
+            )
+            overlayPermissionLauncher.launch(intent)
+        }
+    }
 
     private val viewModel by viewModels<MainViewModel>()
 
@@ -55,6 +94,10 @@ class MainActivity : ComponentActivity() {
 
     override fun onDestroy() {
         try { unregisterReceiver(exitReceiver) } catch (e: Exception) {}
+        val stopFloatIntent = Intent(this, FloatWindowService::class.java).apply {
+            action = FloatWindowService.ACTION_STOP
+        }
+        startService(stopFloatIntent)
         super.onDestroy()
     }
 
@@ -121,11 +164,28 @@ class MainActivity : ComponentActivity() {
                     onSetPowerSaveMode = { value ->
                         viewModel.setPowerSaveMode(value)
                     },
+                    onStartFloatWindow = { value ->
+                        viewModel.setFloatMode(value)
+                        if(value) {
+                            android.util.Log.d("OLED_DEBUG", "toggleFloatWindow")
+                            toggleFloatWindow()
+                        }else{
+                            android.util.Log.d("OLED_DEBUG", "stopFloatService")
 
+                            stopFloatService()
+                        }
+                    },
 
                     // 确保在 onExitApp 之前
                     onExitApp = {                                           // 放最后
                         startService(Intent(this, PriceMonitorService::class.java).setAction(Actions.STOP_MONITOR))
+
+                        // 2. 停止悬浮窗服务 (新增这部分)
+                        val stopFloatIntent = Intent(this, FloatWindowService::class.java).apply {
+                            action = FloatWindowService.ACTION_STOP
+                        }
+                        startService(stopFloatIntent)
+
                         finishAffinity()
                     }
                 )
@@ -173,6 +233,7 @@ fun MainScreen(
     onToggleFlashlight: (Boolean) -> Unit,
     onSetPowerSaveMode: (Boolean) -> Unit,
     onSetOledMode: (Boolean) -> Unit,
+    onStartFloatWindow: (Boolean)-> Unit,
     onExitApp: () -> Unit
 ) {
     var clickCount by remember { mutableIntStateOf(0) }
@@ -187,6 +248,9 @@ fun MainScreen(
             state.networkStatus == NetworkStatus.AVAILABLE &&
             state.socketStatus == SocketStatus.CONNECTED
     val hasIssue = !isAllGood
+
+
+
 
     LaunchedEffect(hasIssue) {
         if (hasIssue) {
@@ -203,6 +267,13 @@ fun MainScreen(
             }
         } else {
             flash = false
+        }
+    }
+
+    LaunchedEffect(state.floatEnable) {
+        // 启动的时候, 如果之前设置了悬浮窗为true, 就恢复悬浮窗
+        if (state.floatEnable) {
+            onStartFloatWindow(true)
         }
     }
 
@@ -359,7 +430,13 @@ fun MainScreen(
                                     Button(onClick = { onSetOledMode(!state.oledModeEnabled)  }) {
                                         Text(if (state.oledModeEnabled) "☀️日间模式" else "🌙 夜间模式" )
                                     }
+                                    Button(onClick = {
+                                        onStartFloatWindow(!state.floatEnable)
+                                    }) {
+                                        Text(if (state.floatEnable) "关闭悬浮窗" else "开启悬浮窗")
+                                    }
                                     Button(onClick = onExitApp) { Text("退出程序") }
+
                                 }
                             }
                         }
@@ -605,6 +682,7 @@ fun PreviewMainScreen() {
         onToggleFlashlight = {},
         onSetPowerSaveMode = {},
         onSetOledMode = {},
+        onStartFloatWindow = {},
         onExitApp = {}
     )
 }

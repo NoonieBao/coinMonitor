@@ -1,17 +1,18 @@
-package com.xconst.ethusdt
+package com.xconst.ethusdt.store
 
 import android.content.Context
+import android.util.Log
+import com.xconst.ethusdt.Symbol
+import com.xconst.ethusdt.bus.AlertCondition
+import com.xconst.ethusdt.bus.Direction
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.serialization.encodeToString
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import kotlin.random.Random
 
 class AppRepository(context: Context) {
 
@@ -104,7 +105,7 @@ class AppRepository(context: Context) {
                     .apply()
 
             }.onFailure {
-                android.util.Log.e("AppRepository", "save error", it)
+                Log.e("AppRepository", "save error", it)
             }
         }
     }

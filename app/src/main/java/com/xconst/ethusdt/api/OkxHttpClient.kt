@@ -1,11 +1,14 @@
-package com.xconst.ethusdt
+package com.xconst.ethusdt.api
 
 import android.util.Log
+import com.xconst.ethusdt.bus.SocketStatus
+import com.xconst.ethusdt.Symbol
 import kotlinx.coroutines.*
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONArray
 import org.json.JSONObject
+import java.security.MessageDigest
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -16,9 +19,8 @@ class OkxHttpClient(
     private val onState: (SocketStatus) -> Unit
 ) {
     private val tag = "OKX_HTTP"
-
     private var lastSuccessTs = 0L
-    private val timeoutMs = 10000L // 超过3秒没成功就认为断了
+    private val timeoutMs = 10000L
 
     private val client = OkHttpClient.Builder()
         .connectTimeout(5, TimeUnit.SECONDS)
@@ -36,7 +38,7 @@ class OkxHttpClient(
     val SECRET = "your_secret"
 
     fun md5(input: String): String {
-        val bytes = java.security.MessageDigest
+        val bytes = MessageDigest
             .getInstance("MD5")
             .digest(input.toByteArray())
 
@@ -116,7 +118,7 @@ class OkxHttpClient(
                 val instId = item.getString("instId")
                 val price = item.getDouble("price")
 
-                val symbol = Symbol.fromInstId(instId) ?: continue
+                val symbol = Symbol.Companion.fromInstId(instId) ?: continue
 
                 onPrice(symbol, price)
             }

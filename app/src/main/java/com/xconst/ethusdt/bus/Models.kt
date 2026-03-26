@@ -1,6 +1,6 @@
-package com.xconst.ethusdt
+package com.xconst.ethusdt.bus
 
-import androidx.compose.ui.text.font.FontFamily
+import com.xconst.ethusdt.Symbol
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -31,9 +31,10 @@ data class AppState(
     val flashlightEnabled: Boolean = false,
     val powerSaveMode: Boolean = false,
     val oledModeEnabled: Boolean = false,
+    val floatEnable: Boolean = false,
 
 
-)
+    )
 
 data class UiState(
     val prices: Map<Symbol, Double> = emptyMap(),
@@ -48,4 +49,5 @@ data class UiState(
     val flashlightEnabled: Boolean = false,
     val powerSaveMode: Boolean = false,
     val oledModeEnabled: Boolean = false,
+    val floatEnable: Boolean = false,
 )
