@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
-class AppRepository(context: Context) {
+class AlarmConditions(context: Context) {
 
     private val appContext = context.applicationContext
     private val scope = CoroutineScope(Dispatchers.IO)
@@ -78,18 +78,6 @@ class AppRepository(context: Context) {
 
     // ===== persistence =====
 
-    private fun save0() {
-        scope.launch {
-
-            val text = json.encodeToString(store.value)
-
-            appContext
-                .getSharedPreferences("alert_conditions", Context.MODE_PRIVATE)
-                .edit()
-                .putString("data", text)
-                .apply()
-        }
-    }
 
     private fun save() {
         scope.launch {

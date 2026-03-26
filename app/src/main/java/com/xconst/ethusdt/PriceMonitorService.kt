@@ -15,7 +15,7 @@ import com.xconst.ethusdt.bus.Direction
 import com.xconst.ethusdt.bus.NetworkStatus
 import com.xconst.ethusdt.bus.SocketStatus
 import com.xconst.ethusdt.floatWindows.FloatWindowService
-import com.xconst.ethusdt.store.AppRepository
+import com.xconst.ethusdt.store.AlarmConditions
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
 
@@ -39,8 +39,8 @@ class PriceMonitorService : Service() {
 
     private lateinit var notificationManager: NotificationManager
     private lateinit var flashlight: FlashlightController
-    private lateinit var networkMonitor: NetworkMonitor
-    private lateinit var repo: AppRepository
+    private lateinit var networkAbilityMonitor: NetworkAbilityMonitor
+    private lateinit var repo: AlarmConditions
     private lateinit var vibrator: Vibrator
 
     // ✅ 改为 nullable（核心修复）
@@ -58,8 +58,8 @@ class PriceMonitorService : Service() {
 
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         flashlight = FlashlightController(this)
-        networkMonitor = NetworkMonitor(this)
-        repo = AppRepository(this)
+        networkAbilityMonitor = NetworkAbilityMonitor(this)
+        repo = AlarmConditions(this)
         vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
 
         observeNetwork()
@@ -260,7 +260,7 @@ class PriceMonitorService : Service() {
 
     private fun observeNetwork() {
         serviceScope.launch {
-            networkMonitor.isAvailable.collectLatest { ok ->
+            networkAbilityMonitor.isAvailable.collectLatest { ok ->
                 if (ok) {
                     networkLostSince = null
                     AppBus.update { it.copy(networkStatus = NetworkStatus.AVAILABLE) }

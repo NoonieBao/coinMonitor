@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.xconst.ethusdt.bus.AppBus
 import com.xconst.ethusdt.bus.Direction
 import com.xconst.ethusdt.bus.UiState
-import com.xconst.ethusdt.store.AppRepository
+import com.xconst.ethusdt.store.AlarmConditions
 import com.xconst.ethusdt.store.SettingsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repo = AppRepository(application)
+    private val repo = AlarmConditions(application)
     private val settingsRepo = SettingsRepository(application)
 
     private val _uiState = MutableStateFlow(UiState())
