@@ -5,7 +5,8 @@ data class SettingsData(
     val screenFlashEnabled: Boolean = false,
     val vibrationEnabled: Boolean = true,
     val flashlightEnabled: Boolean = false,
-    val powerSaveMode: Boolean = true,  // 👈 必须有
+    val powerSaveMode: Boolean = true,
     val oledModeEnabled: Boolean = false,
     val floatEnable: Boolean = false,
+
 )

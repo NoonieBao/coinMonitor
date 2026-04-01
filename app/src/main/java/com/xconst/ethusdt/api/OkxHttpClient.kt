@@ -20,7 +20,7 @@ class OkxHttpClient(
 ) {
     private val tag = "OKX_HTTP"
     private var lastSuccessTs = 0L
-    private val timeoutMs = 10000L
+    private val timeoutMs = 30000L
 
     private val client = OkHttpClient.Builder()
         .connectTimeout(5, TimeUnit.SECONDS)

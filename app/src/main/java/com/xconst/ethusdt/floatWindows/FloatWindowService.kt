@@ -6,6 +6,7 @@ import android.graphics.PixelFormat
 import android.os.Build
 import android.view.Gravity
 import android.view.WindowManager
+import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -35,8 +36,12 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.lifecycle.setViewTreeViewModelStoreOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import com.xconst.ethusdt.com.xconst.ethusdt.bus.MainViewModel
 import com.xconst.ethusdt.bus.AppBus
 import com.xconst.ethusdt.Symbol
+import com.xconst.ethusdt.bus.CoinColor
+import com.xconst.ethusdt.bus.UiState
+import kotlin.getValue
 
 class FloatWindowService : Service() {
     private var windowManager: WindowManager? = null
@@ -56,6 +61,7 @@ class FloatWindowService : Service() {
         }
         return super.onStartCommand(intent, flags, startId)
     }
+    private lateinit var viewModel: MainViewModel
 
     override fun onCreate() {
         super.onCreate()
@@ -80,6 +86,7 @@ class FloatWindowService : Service() {
             x = 100
             y = 100
         }
+        viewModel = MainViewModel(application)
 
         floatingView = ComposeView(this).apply {
             setViewTreeLifecycleOwner(lifecycleOwner)
@@ -107,7 +114,7 @@ class FloatWindowService : Service() {
                             action = ACTION_STOP
                         }
                         this@apply.context.startService(stopIntent)
-                    })
+                    },viewModel)
                 }
             }
         }
@@ -132,8 +139,12 @@ class FloatWindowService : Service() {
 }
 
 @Composable
-fun FloatingPriceUI(onClose: () -> Unit) {
-    val state by AppBus.appState.collectAsState()
+fun FloatingPriceUI(onClose: () -> Unit,viewModel : MainViewModel) {
+
+
+//    val state by AppBus.appState.collectAsState()
+    val state by viewModel.uiState.collectAsState()
+
     var floatStatus by remember { mutableStateOf(true) }
     val prices: Map<Symbol, Double> = state.prices
 
@@ -201,7 +212,8 @@ fun FloatingPriceUI(onClose: () -> Unit) {
                             fontSize = 15.sp, // 缩小主要字体
                             lineHeight = 15.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF00FF00)
+//                            color = Color(0xFF00FF00)
+                            color = state.coinColors[symbol]?: CoinColor.GRAY.rgb
                         )
                     }
 

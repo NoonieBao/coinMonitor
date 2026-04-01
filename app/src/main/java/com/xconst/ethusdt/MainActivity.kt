@@ -41,10 +41,12 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
 import com.xconst.ethusdt.bus.AlertCondition
+import com.xconst.ethusdt.bus.CoinColor
 import com.xconst.ethusdt.bus.Direction
 import com.xconst.ethusdt.bus.NetworkStatus
 import com.xconst.ethusdt.bus.SocketStatus
 import com.xconst.ethusdt.bus.UiState
+import com.xconst.ethusdt.com.xconst.ethusdt.bus.MainViewModel
 import com.xconst.ethusdt.floatWindows.FloatWindowService
 import kotlinx.coroutines.delay
 
@@ -382,7 +384,7 @@ fun MainScreen(
                 }
             }
 
-            item { PricePanel(state.prices, state.oledModeEnabled) }
+            item { PricePanel(state.prices, state.oledModeEnabled, state) }
 
             if (!state.oledModeEnabled) {
                 item {
@@ -524,7 +526,7 @@ fun PixelShifter(enabled: Boolean, content: @Composable () -> Unit) {
 }
 
 @Composable
-fun PricePanel(prices: Map<Symbol, Double>, oledMode: Boolean) {
+fun PricePanel(prices: Map<Symbol, Double>, oledMode: Boolean, state: UiState) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Symbol.entries.forEach { symbol ->
             val price = prices[symbol]
@@ -567,7 +569,8 @@ fun PricePanel(prices: Map<Symbol, Double>, oledMode: Boolean) {
                             text = price?.toString() ?: "--",
                             style = MaterialTheme.typography.displaySmall,
                             fontWeight = FontWeight.Bold,
-                            color = if (oledMode) Color(0xFF008800) else Color.Unspecified
+//                            color = if (oledMode) Color(0xFF008800) else Color.Unspecified
+                            color = state.coinColors[symbol]?: CoinColor.GRAY.rgb
                         )
                     }
                 }

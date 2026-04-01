@@ -231,6 +231,7 @@ class PriceMonitorService : Service() {
                     vibrate()
                     flash()
                 }
+
             } else if (!matched && condition.triggered) {
                 repo.updateTriggered(condition.id, false)
             }
@@ -328,7 +329,7 @@ class PriceMonitorService : Service() {
             .setContentText(content)
             .setSmallIcon(R.drawable.eth_bound)
             .setLargeIcon(
-                BitmapFactory.decodeResource(resources, R.drawable.eth_svgrepo_com)
+                BitmapFactory.decodeResource(resources, R.drawable.bitcoin_logo_svgrepo_com)
             )
             .setOngoing(true)
             .setContentIntent(openPending)

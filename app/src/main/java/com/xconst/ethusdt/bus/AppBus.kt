@@ -10,22 +10,18 @@ object AppBus {
     private val _appState = MutableStateFlow(AppState())
     val appState: StateFlow<AppState> = _appState.asStateFlow()
 
-    fun update(transform: (AppState) -> AppState) {
-        _appState.value = transform(_appState.value)
-    }
     fun applySettings(settings: SettingsData) {
-        _appState.update {
-            it.copy(
-                isMuted = settings.isMuted,
-                screenFlashEnabled = settings.screenFlashEnabled,
-                vibrationEnabled = settings.vibrationEnabled,
-                flashlightEnabled = settings.flashlightEnabled,
-                powerSaveMode = settings.powerSaveMode,
-                oledModeEnabled = settings.oledModeEnabled,
-                floatEnable = settings.floatEnable,
-
-
-            )
-        }
+        // 直接对 .value 进行赋值，逻辑更直观
+        val current = _appState.value
+        _appState.value = current.copy(
+            isMuted = settings.isMuted,
+            screenFlashEnabled = settings.screenFlashEnabled,
+            vibrationEnabled = settings.vibrationEnabled,
+            flashlightEnabled = settings.flashlightEnabled,
+            powerSaveMode = settings.powerSaveMode,
+            oledModeEnabled = settings.oledModeEnabled,
+            floatEnable = settings.floatEnable
+        )
     }
 }
+

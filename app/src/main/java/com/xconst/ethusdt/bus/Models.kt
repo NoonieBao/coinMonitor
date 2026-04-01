@@ -1,5 +1,6 @@
 package com.xconst.ethusdt.bus
 
+import androidx.compose.ui.graphics.Color
 import com.xconst.ethusdt.Symbol
 import kotlinx.serialization.Serializable
 
@@ -19,14 +20,21 @@ data class AlertCondition(
 )
 
 
+enum class CoinColor(val rgb: Color){
+    GREEN(Color(0xFF2fbe85)),
+    RED(Color(0xFFf7455d)),
+    GRAY(Color(0xFF898989))
+}
+
+
 data class AppState(
     val prices: Map<Symbol, Double> = emptyMap(),
     val socketStatus: SocketStatus = SocketStatus.IDLE,
     val networkStatus: NetworkStatus = NetworkStatus.LOST_SHORT,
     val isMonitoring: Boolean = false,
     val isAlarming: Boolean = false,
-    val isMuted: Boolean = true,   // 新增
-    val screenFlashEnabled: Boolean = false,   // 新增
+    val isMuted: Boolean = true,
+    val screenFlashEnabled: Boolean = false,
     val vibrationEnabled: Boolean = true,
     val flashlightEnabled: Boolean = false,
     val powerSaveMode: Boolean = false,
@@ -34,10 +42,12 @@ data class AppState(
     val floatEnable: Boolean = false,
 
 
+
     )
 
 data class UiState(
     val prices: Map<Symbol, Double> = emptyMap(),
+    val coinColors: Map<Symbol, Color> = emptyMap(),        // 仅UI
     val socketStatus: SocketStatus = SocketStatus.IDLE,
     val networkStatus: NetworkStatus = NetworkStatus.LOST_SHORT,
     val isMonitoring: Boolean = false,

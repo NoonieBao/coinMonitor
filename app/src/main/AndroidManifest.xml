@@ -41,6 +41,10 @@
             android:enabled="true"
             android:exported="false" />
 
+        <provider
+            android:name=".PriceProvider"
+            android:authorities="com.xconst.coinmonitor.provider"
+            android:exported="true" />
     </application>
 
 </manifest>

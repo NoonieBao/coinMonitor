@@ -1,9 +1,13 @@
-package com.xconst.ethusdt
+package com.xconst.ethusdt.com.xconst.ethusdt.bus
 
 import android.app.Application
+import android.util.Log
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.xconst.ethusdt.Symbol
 import com.xconst.ethusdt.bus.AppBus
+import com.xconst.ethusdt.bus.CoinColor
 import com.xconst.ethusdt.bus.Direction
 import com.xconst.ethusdt.bus.UiState
 import com.xconst.ethusdt.store.AlarmConditions
@@ -15,28 +19,50 @@ import kotlinx.coroutines.launch
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repo = AlarmConditions(application)
+    private val conditionsRepo = AlarmConditions(application)
     private val settingsRepo = SettingsRepository(application)
 
-    private val _uiState = MutableStateFlow(UiState())
+    val _uiState = MutableStateFlow(UiState())
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
     init {
 
         // conditions
         viewModelScope.launch {
-            repo.conditions.collect { conditions ->
+            conditionsRepo.conditions.collect { conditions ->
                 _uiState.value = _uiState.value.copy(
                     conditions = conditions
                 )
             }
         }
 
+        // DataStore settings → AppBus
+        viewModelScope.launch {
+            settingsRepo.settingsFlow.collect { settings ->
+                AppBus.applySettings(settings)
+            }
+        }
+
+
         // AppBus runtime state
         viewModelScope.launch {
             AppBus.appState.collect { appState ->
+
+                val newColors :Map<Symbol, Color>  = Symbol.entries.associateWith { symbol ->
+                    val newPrice = appState.prices[symbol] ?: 0.0
+                    val oldPrice = _uiState.value.prices[symbol] ?: 0.0
+
+                    when {
+                        newPrice > oldPrice -> CoinColor.GREEN.rgb
+                        newPrice < oldPrice -> CoinColor.RED.rgb
+                        else -> _uiState.value.coinColors[symbol] ?: CoinColor.GRAY.rgb // 默认灰色或保持原样
+                    }
+                }
+
+
                 _uiState.value = _uiState.value.copy(
                     prices = appState.prices,
+                    coinColors = newColors,
                     socketStatus = appState.socketStatus,
                     networkStatus = appState.networkStatus,
                     isMonitoring = appState.isMonitoring,
@@ -53,24 +79,19 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
 
-        // DataStore settings → AppBus
-        viewModelScope.launch {
-            settingsRepo.settingsFlow.collect { settings ->
-                AppBus.applySettings(settings)
-            }
-        }
+
     }
 
     fun addCondition(symbol: Symbol, direction: Direction, value: Double) {
-        repo.addCondition(symbol, direction, value)
+        conditionsRepo.addCondition(symbol, direction, value)
     }
 
     fun deleteCondition(id: Long) {
-        repo.deleteCondition(id)
+        conditionsRepo.deleteCondition(id)
     }
 
     fun toggleCondition(id: Long) {
-        repo.toggleCondition(id)
+        conditionsRepo.toggleCondition(id)
     }
 
     // ===== Settings =====
@@ -108,7 +129,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
 
     fun setOledMode(value: Boolean) {
-        android.util.Log.d("OLED_DEBUG", "fuck $value")
+        Log.d("OLED_DEBUG", "fuck $value")
         viewModelScope.launch {
             settingsRepo.setOledMode(value)
         }
@@ -116,7 +137,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun setFloatMode(value: Boolean) {
-        android.util.Log.d("setFloatMode", "fuck $value")
+        Log.d("setFloatMode", "fuck $value")
 
         viewModelScope.launch {
             settingsRepo.setFloatMode(value)
