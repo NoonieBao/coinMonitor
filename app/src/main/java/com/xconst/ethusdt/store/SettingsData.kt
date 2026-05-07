@@ -8,5 +8,7 @@ data class SettingsData(
     val powerSaveMode: Boolean = true,
     val oledModeEnabled: Boolean = false,
     val floatEnable: Boolean = false,
+    val notifyEnable: Boolean = false,
 
-)
+
+    )

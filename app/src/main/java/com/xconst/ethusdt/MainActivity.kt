@@ -177,6 +177,11 @@ class MainActivity : ComponentActivity() {
                             stopFloatService()
                         }
                     },
+                    onSetNotify = {
+                        value ->
+                            viewModel.setNotifyEnable(value)
+                    },
+                    
 
                     // 确保在 onExitApp 之前
                     onExitApp = {                                           // 放最后
@@ -236,6 +241,7 @@ fun MainScreen(
     onSetPowerSaveMode: (Boolean) -> Unit,
     onSetOledMode: (Boolean) -> Unit,
     onStartFloatWindow: (Boolean)-> Unit,
+    onSetNotify: (Boolean)-> Unit,
     onExitApp: () -> Unit
 ) {
     var clickCount by remember { mutableIntStateOf(0) }
@@ -417,14 +423,14 @@ fun MainScreen(
                                     Button(onClick = { onToggleMuted(!state.isMuted) }) {
                                         Text(if (state.isMuted) "🔇 静音中" else "🔊 声音已开")
                                     }
+                                    Button(onClick = { onToggleVibration(!state.vibrationEnabled) }) {
+                                        Text(if (state.vibrationEnabled) "📳 震动已开" else "📳 震动已关")
+                                    }
                                     Button(onClick = { onToggleFlashScreen(!state.screenFlashEnabled) }) {
                                         Text(if (state.screenFlashEnabled) "💡 闪屏已开" else "💡 闪屏已关")
                                     }
                                     Button(onClick = { onToggleFlashlight(!state.flashlightEnabled) }) {
                                         Text(if (state.flashlightEnabled) "🔦 闪光灯已开启" else "🔦 闪光灯已关闭")
-                                    }
-                                    Button(onClick = { onToggleVibration(!state.vibrationEnabled) }) {
-                                        Text(if (state.vibrationEnabled) "📳 震动已开" else "📳 震动已关")
                                     }
                                     Button(onClick = { onSetPowerSaveMode(!state.powerSaveMode) }) {
                                         Text(if (state.powerSaveMode) "⚡ 省电开启" else "🚀 实时模式开启")
@@ -437,6 +443,14 @@ fun MainScreen(
                                     }) {
                                         Text(if (state.floatEnable) "关闭悬浮窗" else "开启悬浮窗")
                                     }
+
+                                    Button(onClick = {
+                                        onSetNotify(!state.notifyEnable)
+                                    }) {
+                                        Text(if (state.notifyEnable) "通知开启" else "通知已禁用")
+                                    }
+
+                                    
                                     Button(onClick = onExitApp) { Text("退出程序") }
 
                                 }
@@ -686,6 +700,7 @@ fun PreviewMainScreen() {
         onSetPowerSaveMode = {},
         onSetOledMode = {},
         onStartFloatWindow = {},
+        onSetNotify = {},
         onExitApp = {}
     )
 }

@@ -27,6 +27,13 @@ object Actions {
     const val ACTION_EXIT_APP = "ACTION_EXIT_APP"
 }
 
+//object AlarmResult{
+//
+//    const val NETWORK = "start"
+//
+//    const val CONDITION = "CONDITION"
+//
+//}
 class PriceMonitorService : Service() {
 
     companion object {
@@ -40,7 +47,7 @@ class PriceMonitorService : Service() {
     private lateinit var notificationManager: NotificationManager
     private lateinit var flashlight: FlashlightController
     private lateinit var networkAbilityMonitor: NetworkAbilityMonitor
-    private lateinit var repo: AlarmConditions
+    private lateinit var alarmConditions: AlarmConditions
     private lateinit var vibrator: Vibrator
 
     // ✅ 改为 nullable（核心修复）
@@ -51,6 +58,8 @@ class PriceMonitorService : Service() {
     private var networkLostSince: Long? = null
     private var lastNotifyTime = 0L
 
+
+
     override fun onCreate() {
         super.onCreate()
 
@@ -59,7 +68,7 @@ class PriceMonitorService : Service() {
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         flashlight = FlashlightController(this)
         networkAbilityMonitor = NetworkAbilityMonitor(this)
-        repo = AlarmConditions(this)
+        alarmConditions = AlarmConditions(this)
         vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
 
         observeNetwork()
@@ -124,7 +133,7 @@ class PriceMonitorService : Service() {
             // 👉 HTTP 模式
             httpClient = OkxHttpClient(
                 symbols = listOf(Symbol.ETH, Symbol.BTC),
-                baseUrl = "http://83.229.122.28:8989",
+                baseUrl = "http://hostname:8989",
                 onPrice = ::onPrice,
                 onState = { status ->
                     AppBus.update { state ->
@@ -206,16 +215,19 @@ class PriceMonitorService : Service() {
     private fun updateNotification() {
         val state = AppBus.appState.value
 
-        val content = buildString {
+        val isEnable = state.notifyEnable
+
+        var content = buildString {
             state.prices[Symbol.ETH]?.let { append("ETH: $it  ") }
             state.prices[Symbol.BTC]?.let { append("BTC: $it") }
         }
+        content = if(isEnable) content else "通知已禁用"
 
         notificationManager.notify(1001, buildNotification(content))
     }
 
     private fun evaluateConditions(symbol: Symbol, price: Double) {
-        repo.getAll().forEach { condition ->
+        alarmConditions.getAll().forEach { condition ->
             if (!condition.enabled || condition.symbol != symbol) return@forEach
 
             val matched = when (condition.direction) {
@@ -224,7 +236,7 @@ class PriceMonitorService : Service() {
             }
 
             if (matched && !condition.triggered) {
-                repo.updateTriggered(condition.id, true)
+                alarmConditions.updateTriggered(condition.id, true)
 
                 if (!AlarmPlayer.isRunning()) {
                     AlarmPlayer.start(this)
@@ -233,7 +245,7 @@ class PriceMonitorService : Service() {
                 }
 
             } else if (!matched && condition.triggered) {
-                repo.updateTriggered(condition.id, false)
+                alarmConditions.updateTriggered(condition.id, false)
             }
         }
     }
@@ -284,7 +296,7 @@ class PriceMonitorService : Service() {
 
                 val now = System.currentTimeMillis()
 
-                val stale = now - lastPriceMessageAt >= 30_000L
+                val stale = now - lastPriceMessageAt >= 60_000L
 
                 if (stale && AppBus.appState.value.isMonitoring) {
                     AppBus.update { it.copy(networkStatus = NetworkStatus.LOST_LONG) }
@@ -296,6 +308,19 @@ class PriceMonitorService : Service() {
                         vibrate()
                         flash()
                     }
+
+                }else{
+                    // 网络一直正常, 或者刚刚恢复正常
+                    AppBus.update { it.copy(networkStatus = NetworkStatus.AVAILABLE) }
+
+//                    if (AlarmPlayer.isRunning()) {
+//                        // 需要确定 仅仅是 因为网络引起的
+//                        AlarmPlayer.start(applicationContext)
+//                        vibrate()
+//                        flash()
+//                    }
+
+
                 }
             }
         }

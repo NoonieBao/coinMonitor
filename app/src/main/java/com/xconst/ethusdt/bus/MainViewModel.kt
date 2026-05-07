@@ -9,6 +9,7 @@ import com.xconst.ethusdt.Symbol
 import com.xconst.ethusdt.bus.AppBus
 import com.xconst.ethusdt.bus.CoinColor
 import com.xconst.ethusdt.bus.Direction
+import com.xconst.ethusdt.bus.NetworkStatus
 import com.xconst.ethusdt.bus.UiState
 import com.xconst.ethusdt.store.AlarmConditions
 import com.xconst.ethusdt.store.SettingsRepository
@@ -62,6 +63,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
                 _uiState.value = _uiState.value.copy(
                     prices = appState.prices,
+
+
                     coinColors = newColors,
                     socketStatus = appState.socketStatus,
                     networkStatus = appState.networkStatus,
@@ -74,6 +77,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     powerSaveMode = appState.powerSaveMode,
                     oledModeEnabled = appState.oledModeEnabled,
                     floatEnable = appState.floatEnable,
+                    notifyEnable = appState.notifyEnable,
+
 
                 )
             }
@@ -99,6 +104,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun setMuted(value: Boolean) {
         viewModelScope.launch {
             settingsRepo.setMuted(value)
+        }
+    }
+
+    fun setNotifyEnable(value: Boolean) {
+        viewModelScope.launch {
+            settingsRepo.setNotifyEnable(value)
         }
     }
 

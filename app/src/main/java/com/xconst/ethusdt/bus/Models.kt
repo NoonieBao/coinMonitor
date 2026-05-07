@@ -30,7 +30,10 @@ enum class CoinColor(val rgb: Color){
 data class AppState(
     val prices: Map<Symbol, Double> = emptyMap(),
     val socketStatus: SocketStatus = SocketStatus.IDLE,
+
     val networkStatus: NetworkStatus = NetworkStatus.LOST_SHORT,
+    val triggerCondition: AlertCondition? = null,       // 只保留一个吧, 无所谓
+
     val isMonitoring: Boolean = false,
     val isAlarming: Boolean = false,
     val isMuted: Boolean = true,
@@ -40,6 +43,7 @@ data class AppState(
     val powerSaveMode: Boolean = false,
     val oledModeEnabled: Boolean = false,
     val floatEnable: Boolean = false,
+    val notifyEnable: Boolean = false,
 
 
 
@@ -48,6 +52,8 @@ data class AppState(
 data class UiState(
     val prices: Map<Symbol, Double> = emptyMap(),
     val coinColors: Map<Symbol, Color> = emptyMap(),        // 仅UI
+
+
     val socketStatus: SocketStatus = SocketStatus.IDLE,
     val networkStatus: NetworkStatus = NetworkStatus.LOST_SHORT,
     val isMonitoring: Boolean = false,
@@ -60,4 +66,5 @@ data class UiState(
     val powerSaveMode: Boolean = false,
     val oledModeEnabled: Boolean = false,
     val floatEnable: Boolean = false,
+    val notifyEnable: Boolean = false,
 )
