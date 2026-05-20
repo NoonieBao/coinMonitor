@@ -96,6 +96,9 @@ class OkxHttpClient(
         val sign = md5(raw)
 
         val url = "$baseUrl/api/prices?instIds=$instIds&key=$API_KEY&ts=$timestamp&sign=$sign"
+//        val url = "$baseUrl/api/prices?instIds=$instIds&key=$API_KEY&ts=$timestamp&sign=$sign"
+//        Log.d("", "fetchPrices: "+url)
+//        val startTime = System.currentTimeMillis()
 
         val request = Request.Builder()
             .url(url)
@@ -103,9 +106,15 @@ class OkxHttpClient(
             .build()
 
         client.newCall(request).execute().use { response ->
+//            val responseTime = System.currentTimeMillis()
+//            println("请求响应延迟: ${responseTime - startTime}ms")
+
+
             if (!response.isSuccessful) {
                 throw Exception("HTTP ${response.code}")
             }
+
+
 
             val body = response.body?.string() ?: return
 

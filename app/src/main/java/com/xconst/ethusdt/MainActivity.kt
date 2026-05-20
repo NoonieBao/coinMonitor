@@ -103,6 +103,11 @@ class MainActivity : ComponentActivity() {
         super.onDestroy()
     }
 
+    override fun onResume() {
+        super.onResume()
+        // 2. 设置全屏 (隐藏状态栏和导航栏)
+        hideSystemBars()
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -111,8 +116,8 @@ class MainActivity : ComponentActivity() {
             window.attributes.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
         }
 
-        // 2. 设置全屏 (隐藏状态栏和导航栏)
-        hideSystemBars()
+//        // 2. 设置全屏 (隐藏状态栏和导航栏)
+//        hideSystemBars()
 
         registerReceiver(
             exitReceiver,

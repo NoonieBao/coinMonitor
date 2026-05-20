@@ -133,7 +133,7 @@ class PriceMonitorService : Service() {
             // 👉 HTTP 模式
             httpClient = OkxHttpClient(
                 symbols = listOf(Symbol.ETH, Symbol.BTC),
-                baseUrl = "http://hostname:8989",
+                baseUrl = "http://hostname:7876",
                 onPrice = ::onPrice,
                 onState = { status ->
                     AppBus.update { state ->
@@ -222,6 +222,9 @@ class PriceMonitorService : Service() {
             state.prices[Symbol.BTC]?.let { append("BTC: $it") }
         }
         content = if(isEnable) content else "通知已禁用"
+        if(!isEnable){
+            return
+        }
 
         notificationManager.notify(1001, buildNotification(content))
     }
